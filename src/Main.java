@@ -30,8 +30,8 @@ public class Main {
             }
             */
             statement.execute("drop table IF EXISTS Books");
-            statement.executeUpdate("CREATE TABLE IF NOT EXISTS Books (id MEDIUMINT NOT NULL AUTO_INCREMENT, name CHAR(30) NOT NULL, img BLOB, PRIMARY KEY (id))");
-
+            //statement.executeUpdate("CREATE TABLE IF NOT EXISTS Books (id MEDIUMINT NOT NULL AUTO_INCREMENT, name CHAR(30) NOT NULL, img BLOB, PRIMARY KEY (id))");
+            /*
             BufferedImage image = ImageIO.read(new File("smile.jpg"));
             Blob blob = connection.createBlob();
             try(OutputStream outputStream = blob.setBinaryStream(1)) {
@@ -48,6 +48,20 @@ public class Main {
                 BufferedImage image2 = ImageIO.read(blob.getBinaryStream());
                 File outputFile = new File("saved.png");
                 ImageIO.write(image2, "png", outputFile);
+            }
+
+             */
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS Books (id MEDIUMINT NOT NULL AUTO_INCREMENT, name CHAR(30) NOT NULL, dt DATE, PRIMARY KEY (id))");
+
+            PreparedStatement preparedStatement = connection.prepareStatement("insert into Books (name, dt) VALUES ('someName', ?)");
+            preparedStatement.setDate(1, new Date(1696706114968L));
+            preparedStatement.execute();
+            //System.out.println(preparedStatement);
+
+            statement.executeUpdate("insert into Books (name, dt) VALUES ('someName', '2023-10-07')");
+            ResultSet resultSet = statement.executeQuery("select * from Books");
+            while(resultSet.next()){
+                System.out.println(resultSet.getDate("dt"));
             }
         }
     }
