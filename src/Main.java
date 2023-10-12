@@ -1,19 +1,14 @@
-
-import java.sql.*;
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.sql.*;
 
 public class Main {
     public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
-        String  userName = "root";
+        String userName = "root";
         String password = "a1c90521";
         String connectionUrl = "jdbc:mysql://localhost:3306/univers";
         Class.forName("com.mysql.cj.jdbc.Driver");
-        try (Connection connection = DriverManager.getConnection(connectionUrl,userName, password);
-                Statement statement =  connection.createStatement()) {
+        try (Connection connection = DriverManager.getConnection(connectionUrl, userName, password);
+             Statement statement = connection.createStatement()) {
             /* statement.executeUpdate("drop table Users");
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS Users( id MEDIUMINT NOT NULL AUTO_INCREMENT, name CHAR(30) NOT NULL, password CHAR(30) NOT NULL, PRIMARY KEY (id));");
             statement.executeUpdate("INSERT INTO Users (name, password) VALUES ('max','123')");
@@ -51,6 +46,7 @@ public class Main {
             }
 
              */
+            /*
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS Books (id MEDIUMINT NOT NULL AUTO_INCREMENT, name CHAR(30) NOT NULL, dt DATE, PRIMARY KEY (id))");
 
             PreparedStatement preparedStatement = connection.prepareStatement("insert into Books (name, dt) VALUES ('someName', ?)");
@@ -60,9 +56,34 @@ public class Main {
 
             statement.executeUpdate("insert into Books (name, dt) VALUES ('someName', '2023-10-07')");
             ResultSet resultSet = statement.executeQuery("select * from Books");
-            while(resultSet.next()){
+            while (resultSet.next()) {
                 System.out.println(resultSet.getDate("dt"));
             }
+            */
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS Books (id MEDIUMINT NOT NULL AUTO_INCREMENT, name CHAR(30) NOT NULL, dt DATE, PRIMARY KEY (id))");
+            statement.executeUpdate("insert into books (name) values ('Inferno')");
+            statement.executeUpdate("insert into books (name) values ('Solomon key')");
+
+            CallableStatement callableStatement = connection.prepareCall("{call BooksCount(?)}");
+            callableStatement.registerOutParameter(1, Types.INTEGER);
+            callableStatement.execute();
+            System.out.println(callableStatement.getInt(1));
+            System.out.println("------------------------");
+
+            CallableStatement callableStatement1 = connection.prepareCall("{call getBooks(?)}");
+            callableStatement1.setInt(1,2);
+            if(callableStatement1.execute()){
+                ResultSet resultSet = callableStatement1.getResultSet();
+                while (resultSet.next()){
+                    System.out.println(resultSet.getInt("id"));
+                    System.out.println(resultSet.getString("name"));
+
+                }
+            }
+            //ResultSet resultSet = callableStatement.getResultSet();
+            //while (resultSet.next()){
+            //    System.out.println();
+            //}
         }
     }
 }
