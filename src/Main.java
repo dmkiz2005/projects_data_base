@@ -61,7 +61,7 @@ public class Main {
             */
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS Books (id MEDIUMINT NOT NULL AUTO_INCREMENT, name CHAR(30) NOT NULL, dt DATE, PRIMARY KEY (id))");
             statement.executeUpdate("insert into books (name) values ('Inferno')");
-            statement.executeUpdate("insert into books (name) values ('DaVinchi Code')", Statement.RETURN_GENERATED_KEYS);
+            statement.executeUpdate("insert into books (name) values ('DaVinchi Code')");
             statement.executeUpdate("insert into books (name) values ('Solomon key')");
 
             /*CallableStatement callableStatement = connection.prepareCall("{call BooksCount(?)}");
@@ -97,7 +97,7 @@ public class Main {
             }
 
              */
-
+            /*
             Statement stat = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
             //PreparedStatement preparedStatement = connection.prepareStatement("", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
             ResultSet resultSet = stat.executeQuery("select * from books");
@@ -125,8 +125,35 @@ public class Main {
             if(resultSet.last()){
                 System.out.println(resultSet.getString("name"));
             }
+            */
             //resultSet.beforeFirst();
             //resultSet.next();
+
+            Statement stat = connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            //PreparedStatement preparedStatement = connection.prepareStatement("sql", ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_UPDATABLE);
+
+            ResultSet resultSet = stat.executeQuery("select * from books");
+            while(resultSet.next()){
+                System.out.println(resultSet.getInt("id"));
+                System.out.println(resultSet.getString("name"));
+            }
+
+            resultSet.last();
+            resultSet.updateString("name", "new Value");
+            resultSet.updateRow();
+
+            resultSet.moveToInsertRow();
+            resultSet.updateString("name","inserted new");
+            resultSet.insertRow();
+
+            resultSet.absolute(2);
+            resultSet.deleteRow();
+
+            resultSet.beforeFirst();
+            while(resultSet.next()){
+                System.out.println(resultSet.getInt("id"));
+                System.out.println(resultSet.getString("name"));
+            }
         }
     }
 }
