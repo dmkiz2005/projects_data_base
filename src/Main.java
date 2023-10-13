@@ -61,6 +61,7 @@ public class Main {
             */
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS Books (id MEDIUMINT NOT NULL AUTO_INCREMENT, name CHAR(30) NOT NULL, dt DATE, PRIMARY KEY (id))");
             statement.executeUpdate("insert into books (name) values ('Inferno')");
+            statement.executeUpdate("insert into books (name) values ('DaVinchi Code')", Statement.RETURN_GENERATED_KEYS);
             statement.executeUpdate("insert into books (name) values ('Solomon key')");
 
             /*CallableStatement callableStatement = connection.prepareCall("{call BooksCount(?)}");
@@ -84,7 +85,7 @@ public class Main {
             //    System.out.println();
             //}
             */
-
+            /*
             CallableStatement callableStatement = connection.prepareCall("CALL getCount()");
             boolean hasResults = callableStatement.execute();
             while (hasResults){
@@ -94,6 +95,38 @@ public class Main {
                 }
                 hasResults = callableStatement.getMoreResults();
             }
+
+             */
+
+            Statement stat = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            //PreparedStatement preparedStatement = connection.prepareStatement("", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            ResultSet resultSet = stat.executeQuery("select * from books");
+            if(resultSet.next()){
+                System.out.println(resultSet.getString("name"));
+            }
+            if(resultSet.next()){
+                System.out.println(resultSet.getString("name"));
+            }
+            if(resultSet.previous()){
+                System.out.println(resultSet.getString("name"));
+            }
+            if(resultSet.relative(2)){
+                System.out.println(resultSet.getString("name"));
+            }
+            if(resultSet.relative(-2)){
+                System.out.println(resultSet.getString("name"));
+            }
+            if(resultSet.absolute(2)){
+                System.out.println(resultSet.getString("name"));
+            }
+            if(resultSet.first()){
+                System.out.println(resultSet.getString("name"));
+            }
+            if(resultSet.last()){
+                System.out.println(resultSet.getString("name"));
+            }
+            //resultSet.beforeFirst();
+            //resultSet.next();
         }
     }
 }
