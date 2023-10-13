@@ -1,13 +1,51 @@
+import javax.sql.RowSet;
+import javax.sql.rowset.CachedRowSet;
+import javax.sql.rowset.RowSetFactory;
+import javax.sql.rowset.RowSetProvider;
 import java.sql.*;
+import java.text.ParseException;
 
 public class Main {
+
+    static String userName = "root";
+    static String password = "a1c90521";
+    static String connectionUrl = "jdbc:mysql://localhost:3306/univers";
     public static void main(String[] args) throws Exception {
-        String userName = "root";
-        String password = "a1c90521";
-        String connectionUrl = "jdbc:mysql://localhost:3306/univers";
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        try (Connection connection = DriverManager.getConnection(connectionUrl, userName, password);
-             Statement statement = connection.createStatement()) {
+        ResultSet resultSet = getData();
+        while(resultSet.next()) {
+            System.out.println(resultSet.getInt("id"));
+            System.out.println(resultSet.getString("name"));
+        }
+
+        CachedRowSet cachedRowSet = (CachedRowSet) resultSet;
+        cachedRowSet.setUrl(connectionUrl);
+        cachedRowSet.setUsername(userName);
+        cachedRowSet.setPassword(password);
+        /*
+        cachedRowSet.setCommand("select * from books where id = ?");
+        cachedRowSet.setInt(1,1);
+        cachedRowSet.setPageSize(20);
+        cachedRowSet.execute();
+        do{
+            while(cachedRowSet.next()){
+                System.out.println(cachedRowSet.getInt("id"));
+                System.out.println(cachedRowSet.getString("name"));
+            }
+        }while(cachedRowSet.nextPage());
+         */
+
+        CachedRowSet cachedRowSet1 = (CachedRowSet) resultSet;
+        cachedRowSet1.setTableName("Books");
+        cachedRowSet1.absolute(1);
+        cachedRowSet1.deleteRow();
+        cachedRowSet1.beforeFirst();
+        while(cachedRowSet1.next()){
+            System.out.println(cachedRowSet1.getInt("id"));
+            System.out.println(cachedRowSet1.getString("name"));
+        }
+        cachedRowSet1.acceptChanges(DriverManager.getConnection(connectionUrl, userName,password));
+        //cachedRowSet1.acceptChanges();
+
             /* statement.executeUpdate("drop table Users");
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS Users( id MEDIUMINT NOT NULL AUTO_INCREMENT, name CHAR(30) NOT NULL, password CHAR(30) NOT NULL, PRIMARY KEY (id));");
             statement.executeUpdate("INSERT INTO Users (name, password) VALUES ('max','123')");
@@ -23,7 +61,6 @@ public class Main {
                    System.out.println("userPassword: " + resultSet.getString("password"));
             }
             */
-            statement.execute("drop table IF EXISTS Books");
             //statement.executeUpdate("CREATE TABLE IF NOT EXISTS Books (id MEDIUMINT NOT NULL AUTO_INCREMENT, name CHAR(30) NOT NULL, img BLOB, PRIMARY KEY (id))");
             /*
             BufferedImage image = ImageIO.read(new File("smile.jpg"));
@@ -59,10 +96,6 @@ public class Main {
                 System.out.println(resultSet.getDate("dt"));
             }
             */
-            statement.executeUpdate("CREATE TABLE IF NOT EXISTS Books (id MEDIUMINT NOT NULL AUTO_INCREMENT, name CHAR(30) NOT NULL, dt DATE, PRIMARY KEY (id))");
-            statement.executeUpdate("insert into books (name) values ('Inferno')");
-            statement.executeUpdate("insert into books (name) values ('DaVinchi Code')");
-            statement.executeUpdate("insert into books (name) values ('Solomon key')");
 
             /*CallableStatement callableStatement = connection.prepareCall("{call BooksCount(?)}");
             callableStatement.registerOutParameter(1, Types.INTEGER);
@@ -128,7 +161,7 @@ public class Main {
             */
             //resultSet.beforeFirst();
             //resultSet.next();
-
+            /*
             Statement stat = connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
             //PreparedStatement preparedStatement = connection.prepareStatement("sql", ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_UPDATABLE);
 
@@ -154,6 +187,26 @@ public class Main {
                 System.out.println(resultSet.getInt("id"));
                 System.out.println(resultSet.getString("name"));
             }
+            */
+    }
+
+    static ResultSet getData() throws Exception{
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        try (Connection connection = DriverManager.getConnection(connectionUrl, userName, password);
+            Statement statement = connection.createStatement()) {
+            statement.execute("drop table IF EXISTS Books");
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS Books (id MEDIUMINT NOT NULL AUTO_INCREMENT, name CHAR(30) NOT NULL, dt DATE, PRIMARY KEY (id))");
+            statement.executeUpdate("insert into books (name) values ('Inferno')", Statement.RETURN_GENERATED_KEYS);
+            statement.executeUpdate("insert into books (name) values ('DaVinchi Code')", Statement.RETURN_GENERATED_KEYS);
+            statement.executeUpdate("insert into books (name) values ('Solomon key')", Statement.RETURN_GENERATED_KEYS);
+
+            RowSetFactory factory = RowSetProvider.newFactory();
+            CachedRowSet cachedRowSet = factory.createCachedRowSet();
+
+            Statement stat = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            ResultSet resultSet = stat.executeQuery("select * from books");
+            cachedRowSet.populate(resultSet);
+            return cachedRowSet;
         }
     }
 }
