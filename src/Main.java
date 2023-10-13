@@ -1,8 +1,7 @@
-import java.io.IOException;
 import java.sql.*;
 
 public class Main {
-    public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
+    public static void main(String[] args) throws Exception {
         String userName = "root";
         String password = "a1c90521";
         String connectionUrl = "jdbc:mysql://localhost:3306/univers";
@@ -64,7 +63,7 @@ public class Main {
             statement.executeUpdate("insert into books (name) values ('Inferno')");
             statement.executeUpdate("insert into books (name) values ('Solomon key')");
 
-            CallableStatement callableStatement = connection.prepareCall("{call BooksCount(?)}");
+            /*CallableStatement callableStatement = connection.prepareCall("{call BooksCount(?)}");
             callableStatement.registerOutParameter(1, Types.INTEGER);
             callableStatement.execute();
             System.out.println(callableStatement.getInt(1));
@@ -84,6 +83,17 @@ public class Main {
             //while (resultSet.next()){
             //    System.out.println();
             //}
+            */
+
+            CallableStatement callableStatement = connection.prepareCall("CALL getCount()");
+            boolean hasResults = callableStatement.execute();
+            while (hasResults){
+                ResultSet resultSet = callableStatement.getResultSet();
+                while(resultSet.next()){
+                    System.out.println(resultSet.getInt(1));
+                }
+                hasResults = callableStatement.getMoreResults();
+            }
         }
     }
 }
