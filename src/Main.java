@@ -11,7 +11,7 @@ public class Main {
     static String password = "a1c90521";
     static String connectionUrl = "jdbc:mysql://localhost:3306/univers";
     public static void main(String[] args) throws Exception {
-        ResultSet resultSet = getData();
+        /*ResultSet resultSet = getData();
         while(resultSet.next()) {
             System.out.println(resultSet.getInt("id"));
             System.out.println(resultSet.getString("name"));
@@ -21,7 +21,23 @@ public class Main {
         cachedRowSet.setUrl(connectionUrl);
         cachedRowSet.setUsername(userName);
         cachedRowSet.setPassword(password);
-        /*
+        */
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        try (Connection connection = DriverManager.getConnection(connectionUrl, userName, password);
+             Statement stat = connection.createStatement()) {
+            stat.execute("drop table if exists books");
+            stat.executeUpdate("CREATE TABLE IF NOT EXISTS Books (id MEDIUMINT NOT NULL AUTO_INCREMENT, name CHAR(30) NOT NULL, dt DATE, PRIMARY KEY (id))");
+
+            DatabaseMetaData databaseMetaData = connection.getMetaData();
+            ResultSet resultSet = databaseMetaData.getTables(null,null,null, new String[]{"Table"});
+            while (resultSet.next()){
+                System.out.println(resultSet.getString(1));
+                System.out.println(resultSet.getString(2));
+                System.out.println(resultSet.getString(3));
+                System.out.println(resultSet.getString(4));
+            }
+        }
+         /*
         cachedRowSet.setCommand("select * from books where id = ?");
         cachedRowSet.setInt(1,1);
         cachedRowSet.setPageSize(20);
@@ -33,7 +49,7 @@ public class Main {
             }
         }while(cachedRowSet.nextPage());
          */
-
+/*
         CachedRowSet cachedRowSet1 = (CachedRowSet) resultSet;
         cachedRowSet1.setTableName("Books");
         cachedRowSet1.absolute(1);
@@ -45,6 +61,9 @@ public class Main {
         }
         cachedRowSet1.acceptChanges(DriverManager.getConnection(connectionUrl, userName,password));
         //cachedRowSet1.acceptChanges();
+
+ */
+
 
             /* statement.executeUpdate("drop table Users");
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS Users( id MEDIUMINT NOT NULL AUTO_INCREMENT, name CHAR(30) NOT NULL, password CHAR(30) NOT NULL, PRIMARY KEY (id));");
